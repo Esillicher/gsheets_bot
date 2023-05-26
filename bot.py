@@ -78,7 +78,6 @@ def answer(call):
     #     delete_sheet(call.data[4:], call.message)
 
 
-
 # стартовое меню
 @bot.message_handler(content_types=["text"], commands=['start', 'help'])
 def send_welcome(message):
@@ -94,7 +93,8 @@ def list_of_sheets(message):
     text_message = f'The document contains sheets with the following titles:\n'\
                    f'{*list(doc.sheets.keys()),}'
     bot.send_message(message.chat.id, text_message)
-    bot.send_message(message.chat.id, 'To go to one of them, click the button', reply_markup=keyboard('list_of_sheets','reg'))
+    bot.send_message(message.chat.id, 'To go to one of them, click the button',
+                     reply_markup=keyboard('list_of_sheets', 'reg'))
 
 
 # - выбрать лист по названию
@@ -116,7 +116,11 @@ def add_new_sheet(message):
 
     list_name = message.text
     doc.add_sheet(list_name)
-    bot.send_message(message.chat.id, f'You created a sheet called \'{list_name}\'. Choose next step:', reply_markup=keyboard('sheet', 'reg'))
+
+    bot.send_message(message.chat.id, f'You created a sheet called \'{list_name}\'. Choose next step:',
+                     reply_markup=keyboard('document', 'reg'))
+
+    doc = Spreadsheet(sheet_id=SHEET_ID, scopes=DEFAULT_SCOPES, auth_file=AUTH_FILE)
 
     return doc
 
@@ -127,14 +131,22 @@ def copy_sheet_menu(message):
     text_message = f'The document contains sheets with the following titles:\n' \
                    f'{*list(doc.sheets.keys()),}'
     bot.send_message(message.chat.id, text_message)
-    bot.send_message(message.chat.id, 'Click on the one you want to copy', reply_markup=keyboard('list_of_sheets', 'copy'))
+    bot.send_message(message.chat.id, 'Click on the one you want to copy',
+                     reply_markup=keyboard('list_of_sheets', 'copy'))
+
 
 @bot.message_handler(content_types=["text"])
 def copy_sheet(text, message):
-    doc.duplicate_sheet(doc.sheets[text], f'{text}_copy')
+    global doc
+
+    doc.duplicate_sheet(doc.sheets[text], f'{text}')
     bot.send_message(message.chat.id,
                      f'Congrats! You successfully copied a sheet called \'{text}_copy\'. Choose next step:',
-                     reply_markup=keyboard('sheet', 'reg'))
+                     reply_markup=keyboard('document', 'reg'))
+
+    doc = Spreadsheet(sheet_id=SHEET_ID, scopes=DEFAULT_SCOPES, auth_file=AUTH_FILE)
+
+    return doc
 
 
 # удаление листа
